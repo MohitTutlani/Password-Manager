@@ -44,6 +44,42 @@ def generate_password():
     #entering password to password entry widget
     password_entry.insert(END,password)
 
+# ---------------------------- Search Password ------------------------------- #
+def search_password():
+    # Getting user website entry
+    website = website_entry.get()
+    # Get password data
+    if len(website) == 0:
+        messagebox.showinfo(title="Oops", message="Please enter a website to search")
+    else:
+        # Try to see if password files exit ,is in JSON, and not blank
+        try:
+            # seeing if there is any old passwords data file
+            with open("data.json", mode="r") as old_password_file:
+                # reading old password data
+                password_data = json.load(old_password_file)
+        # If there is no password file, or is in incorrect JSON format or is blank
+        except (FileNotFoundError, json.decoder.JSONDecodeError):
+            messagebox.showinfo(title="No passwords saved", message="Sorry, you have not saved any password before")
+        else:
+            
+            # If the searched website is in password data
+            if website in password_data:
+                username = password_data[website]["username"]
+                password = password_data[website]["password"]
+                # Save to clipboard message box
+                is_clipboard = messagebox.askokcancel(title=website, message=f"username: {username}\nPassword: {password}"
+                                                                             f"\n\nSave to clipboard ?")
+                # Save to clipboard
+                if is_clipboard:
+                    # saving password to clipboard
+                    pyperclip.copy(password)
+                    messagebox.showinfo(title="Saved to clipboard", message="Password has been saved to clipboard")
+            # IF the searched website is not in the database
+            else:
+                messagebox.showinfo(title="Password not saved for this website", message=f"The password for {website}\n"
+                                                                                         f"has not been saved")
+
 
 
 # ---------------------------- Insert into database ------------------------------- #
@@ -112,8 +148,8 @@ def file_generation(website,username,password):
         pyperclip.copy(password)
         new_entry_in_json = {
                 website:{
-                    "Username/Email: ": username,
-                    "password:": password
+                    "username": username,
+                    "password": password
                 }
             }
         file_manager(new_entry_in_json)   
@@ -156,6 +192,9 @@ password_entry.grid(column= 1, row=3)
 
 
 #BUTTONS
+#Search Password button
+search_button = Button(text="Search", font=FONT, command=search_password).grid(column=3, row=1)
+
 #Generate Password Button
 generate_password = Button(window, text="Generate Password", font= FONT, command=generate_password).grid(column=3, row=3)
 
